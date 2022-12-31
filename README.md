@@ -35,9 +35,9 @@ $ make
 ```
 ## use
 
-The first and second parameters specify the paths to the image and the result {PNG}. The third parameter specifies the scale of the image. The fourth specifies the scaling method {0 - bicubic, 1 - biakima}.
+The first parameter specifies the path to the image. The second parameter is the resulting BW mask. The third parameter is foreground. The fourth parameter is the background.
 ```shell
-./stbresize $IMAGE_PATH $BWMASK_out.png $FG_out.png $FB_out.png
+./stbdjvul $IMAGE_PATH $BWMASK_out.png $FG_out.png $BG_out.png
 ```
 
 ## structure
@@ -52,10 +52,10 @@ The first and second parameters specify the paths to the image and the result {P
 ```shell
 ./stbdjvul lena.png lena.mask.png lena.fg.png lena.bg.png 
 Load: lena.png
-image: 256x256:3
-BG,FG: 86x86:3
-DjVuL...
-Save png: lena.mask.png, lena.fg.png, lena.bg.png
+image: 512x512:3
+BG,FG: 171x171:3
+DjVuL... 8 level
+Save png: lena.m.png, lena.fg.png, lena.bg.png
 ```
 
 ![lena](images/lena.png)  

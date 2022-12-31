@@ -115,8 +115,8 @@ int main(int argc, char **argv)
         return 2;
     }
 
-    printf("DjVuL...\n");
-    if(!ImageDjvulThreshold(data, mask_data, bg_data, fg_data, width, height, bgs, level, wbmode, doverlay))
+    printf("DjVuL...");
+    if(!(level = ImageDjvulThreshold(data, mask_data, bg_data, fg_data, width, height, bgs, level, wbmode, doverlay)))
     {
         fprintf(stderr, "ERROR: not complite DjVuL\n");
         return 3;
@@ -137,6 +137,7 @@ int main(int argc, char **argv)
             ki++;
         }
     }
+    printf(" %d level\n", level);
 
     printf("Save png: %s", mask_name);
     if (!(stbi_write_png(mask_name, width, height, IMAGE_CHANNELS, data, width * IMAGE_CHANNELS)))
@@ -159,7 +160,7 @@ int main(int argc, char **argv)
     free(bg_data);
     free(fg_data);
     free(mask_data);
-    free(data);    
+    free(data);
 
     return 0;
 }
