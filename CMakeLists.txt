@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project(stbdjvul)
+add_compile_options(-O3)
+add_executable(stbdjvul src/stbdjvul.c)
+target_link_libraries(stbdjvul m)
