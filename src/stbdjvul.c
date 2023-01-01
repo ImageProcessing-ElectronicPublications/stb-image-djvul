@@ -3,63 +3,93 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "image-stb.h"
 #include "djvul.h"
 
+void djvul_usage(char* prog, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic)
+{
+    printf("StbDjVuL version %s.\n", DJVUL_VERSION);
+    printf("usage: %s [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png]\n", prog);
+    printf("options:\n");
+    printf("  -a N.N    factor anisortopic (default %f)\n", anisotropic);
+    printf("  -b NUM    downsample FG and BG (default %d)\n", bgs);
+    printf("  -l NUM    level of scale blocks (default %d)\n", level);
+    printf("  -o N.N    part of overlay blocks (default %f)\n", doverlay);
+    printf("  -w        white/black mode (default %d)\n", wbmode);
+    printf("  -h        show this help message and exit\n");
+}
+
 int main(int argc, char **argv)
 {
-    float ratio = 1.0f;
     unsigned int bgs = 3;
     unsigned int level = 0;
     int wbmode = 1;
     float doverlay = 0.5f;
-    if (argc < 5)
+    float anisotropic = 0.0f;
+    int fhelp = 0;
+    int opt;
+    while ((opt = getopt(argc, argv, ":a:b:l:o:wh")) != -1)
     {
-        fprintf(stderr, "Usage: %s image_in mask.png fg.png bg.png [bgs] [level] [wbmode] [overlay]\n", argv[0]);
-        fprintf(stderr, "bgs = %d\n", bgs);
-        fprintf(stderr, "level = %d\n", level);
-        fprintf(stderr, "w/b = %d\n", wbmode);
-        fprintf(stderr, "overlay = %f\n", doverlay);
+        switch(opt)
+        {
+        case 'a':
+            anisotropic = atof(optarg);
+            break;
+        case 'b':
+            bgs = atoi(optarg);
+            if (bgs < 1)
+            {
+                fprintf(stderr, "Bad argument\n");
+                fprintf(stderr, "bgs = %d\n", bgs);
+                return 1;
+            }
+            break;
+        case 'l':
+            level = atoi(optarg);
+            if (level < 0)
+            {
+                fprintf(stderr, "Bad argument\n");
+                fprintf(stderr, "level = %d\n", level);
+                return 1;
+            }
+            break;
+        case 'o':
+            doverlay = atof(optarg);
+            if (doverlay < 0.0f)
+            {
+                fprintf(stderr, "Bad argument\n");
+                fprintf(stderr, "overlay = %f\n", doverlay);
+                return 1;
+            }
+            break;
+        case 'w':
+            wbmode = -wbmode;
+            break;
+        case 'h':
+            fhelp = 1;
+            break;
+        case ':':
+            fprintf(stderr, "ERROR: option needs a value\n");
+            return 2;
+            break;
+        case '?':
+            fprintf(stderr, "ERROR: unknown option: %c\n", optopt);
+            return 3;
+            break;
+        }
+    }
+    if(optind + 2 > argc || fhelp)
+    {
+        djvul_usage(argv[0], bgs, level, wbmode, doverlay, anisotropic);
         return 0;
     }
-    if (argc > 5)
-    {
-        bgs = atoi(argv[5]);
-        if (bgs < 1)
-        {
-            fprintf(stderr, "Bad argument\n");
-            fprintf(stderr, "bgs = %d\n", bgs);
-            return 1;
-        }
-    }
-    if (argc > 6)
-    {
-        level = atoi(argv[6]);
-        if (level < 0)
-        {
-            fprintf(stderr, "Bad argument\n");
-            fprintf(stderr, "level = %d\n", level);
-            return 1;
-        }
-    }
-    if (argc > 7)
-    {
-        wbmode = atoi(argv[7]);
-    }
-    if (argc > 8)
-    {
-        doverlay = atof(argv[8]);
-        if (doverlay < 0.0f)
-        {
-            fprintf(stderr, "Bad argument\n");
-            fprintf(stderr, "overlay = %f\n", doverlay);
-            return 1;
-        }
-    }
-    const char *src_name = argv[1];
-    const char *mask_name = argv[2];
-    const char *fg_name = argv[3];
-    const char *bg_name = argv[4];
+    const char *src_name = argv[optind];
+    const char *mask_name = argv[optind + 1];
+    const char *bg_name = NULL;
+    if(optind + 2 < argc) bg_name = argv[optind + 2];
+    const char *fg_name = NULL;
+    if(optind + 3 < argc) fg_name = argv[optind + 3];
 
     int height, width, channels;
 
@@ -92,8 +122,8 @@ int main(int argc, char **argv)
     }
     stbi_image_free(img);
 
-    int bg_height = (width + bgs - 1) / bgs;
-    int bg_width = (height + bgs - 1) / bgs;
+    int bg_width = (width + bgs - 1) / bgs;
+    int bg_height = (height + bgs - 1) / bgs;
     printf("BG,FG: %dx%d:%d\n", bg_width, bg_height, IMAGE_CHANNELS);
 
     bool *mask_data = NULL;
@@ -116,7 +146,7 @@ int main(int argc, char **argv)
     }
 
     printf("DjVuL...");
-    if(!(level = ImageDjvulThreshold(data, mask_data, bg_data, fg_data, width, height, bgs, level, wbmode, doverlay)))
+    if(!(level = ImageDjvulThreshold(data, mask_data, bg_data, fg_data, width, height, bgs, level, wbmode, doverlay, anisotropic)))
     {
         fprintf(stderr, "ERROR: not complite DjVuL\n");
         return 3;
@@ -145,18 +175,26 @@ int main(int argc, char **argv)
         fprintf(stderr, "ERROR: not write image: %s\n", mask_name);
         return 1;
     }
-    printf(", %s", fg_name);
-    if (!(stbi_write_png(fg_name, bg_width, bg_height, IMAGE_CHANNELS, fg_data, bg_width * IMAGE_CHANNELS)))
+    if (bg_name)
     {
-        fprintf(stderr, "ERROR: not write image: %s\n", fg_name);
-        return 1;
+        printf(", %s", bg_name);
+        if (!(stbi_write_png(bg_name, bg_width, bg_height, IMAGE_CHANNELS, bg_data, bg_width * IMAGE_CHANNELS)))
+        {
+            fprintf(stderr, "ERROR: not write image: %s\n", bg_name);
+            return 1;
+        }
     }
-    printf(", %s\n", bg_name);
-    if (!(stbi_write_png(bg_name, bg_width, bg_height, IMAGE_CHANNELS, bg_data, bg_width * IMAGE_CHANNELS)))
+    if (fg_name)
     {
-        fprintf(stderr, "ERROR: not write image: %s\n", bg_name);
-        return 1;
+        printf(", %s", fg_name);
+        if (!(stbi_write_png(fg_name, bg_width, bg_height, IMAGE_CHANNELS, fg_data, bg_width * IMAGE_CHANNELS)))
+        {
+            fprintf(stderr, "ERROR: not write image: %s\n", fg_name);
+            return 1;
+        }
     }
+    printf(".\n");
+
     free(bg_data);
     free(fg_data);
     free(mask_data);

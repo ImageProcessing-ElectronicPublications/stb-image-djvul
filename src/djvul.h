@@ -4,6 +4,18 @@ https://github.com/plzombie/depress/issues/2
 
 #ifndef DJVUL_H_
 #define DJVUL_H_
+#define DJVUL_VERSION "1.1"
+
+#define IMAGE_CHANNELS 3
+
+float exp256aprox(float x)
+{
+    x = 1.0 + x / 256.0;
+    x *= x; x *= x; x *= x; x *= x;
+    x *= x; x *= x; x *= x; x *= x;
+
+    return x;
+}
 
 /*
 ImageDjvulThreshold()
@@ -23,9 +35,7 @@ Use:
 bool ok = ImageDjvulThreshold(buf, bufbg, buffg, width, height, bgs, level, wbmode, doverlay);
 */
 
-#define IMAGE_CHANNELS 3
-
-int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay)
+int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic)
 {
     unsigned int y, x, d, i, j;
     unsigned int y0, x0, y1, x1, y0b, x0b, y1b, x1b, yb, xb;
@@ -36,7 +46,7 @@ int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg,
     int pim[IMAGE_CHANNELS], gim[IMAGE_CHANNELS];
     int fgim[IMAGE_CHANNELS], bgim[IMAGE_CHANNELS];
     int imd;
-    float imx, parts, ims[IMAGE_CHANNELS];
+    float fgk, imx, parts, ims[IMAGE_CHANNELS];
     float fgdist, bgdist, fgdistf, bgdistf, kover, fgpart, bgpart;
     unsigned int maskbl, maskover, bgsover, fgnum, bgnum;
     unsigned int fgsum[IMAGE_CHANNELS], bgsum[IMAGE_CHANNELS];
@@ -228,6 +238,26 @@ int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg,
                     bgdist += imd;
                 }
 
+                // anisotropic regulator
+                fgk = (fgdist + bgdist);
+                if (fgk > 0)
+                {
+                    fgk = (bgdist - fgdist) / fgk;
+                    fgk *= anisotropic;
+                    fgk = exp256aprox(fgk);
+                }
+                else
+                {
+                    fgk = 1.0;
+                }
+                for (d = 0; d < 3; d++)
+                {
+                    fgsum[d] = 0;
+                    bgsum[d] = 0;
+                }
+                fgnum = 0;
+                bgnum = 0;
+
                 // separate FG and BG
                 for (d = 0; d < IMAGE_CHANNELS; d++)
                 {
@@ -263,7 +293,7 @@ int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg,
                             bgdistf += imd;
                         }
 
-                        if (fgdistf < bgdistf)
+                        if (fgdistf * fgk < bgdistf)
                         {
                             for (d = 0; d < IMAGE_CHANNELS; d++)
                             {

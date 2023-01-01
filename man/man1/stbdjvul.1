@@ -1,0 +1,50 @@
+.TH "StbDjVuL" 1 1.1 "1 Jan 2023" "User Manual"
+
+.SH NAME
+stbdjvul
+
+.SH DESCRIPTION
+DjVu Layered - image bundle on the mask + foreground + background using "Multi-scale binarization".
+
+Degradation of images on layers mask, foreground and background by cluster analysis with a gradual decrease in block size.
+
+.SH SYNOPSIS
+stbdjvul [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png]
+
+.SH OPTIONS
+.TP
+-a N.N
+factor anisortopic (default 0.0)
+.TP
+-b NUM
+downsample FG and BG (default 3)
+.TP
+-l NUM
+level of scale blocks (default 0 = auto)
+.TP
+-o N.N
+part of overlay blocks (default 0.5)
+.TP
+-w
+white/black mode (default 1 = white)
+.TP
+-h
+show this help message and exit
+
+.SH EXAMPLE
+stbdjvul lena.png lena.mask.png lena.bg.png lena.fg.png 
+ 
+ Load: lena.png
+ image: 256x256:3
+ BG,FG: 86x86:3
+ DjVuL... 7 level
+ Save png: lena.mask.png, lena.bg.png, lena.fg.png.
+
+.SH COPYRIGHT
+This is free and unencumbered software released into the public domain.
+
+.SH SEE ALSO
+cjb2(1), c44(1), djvuextract(1), djvumake(1)
+
+.SH CONTACTS
+Website: https://github.com/ImageProcessing-ElectronicPublications/stb-image-djvul

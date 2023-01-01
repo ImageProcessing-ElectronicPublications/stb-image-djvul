@@ -37,7 +37,7 @@ $ make
 
 The first parameter specifies the path to the image. The second parameter is the resulting BW mask. The third parameter is foreground. The fourth parameter is the background.
 ```shell
-./stbdjvul $IMAGE_PATH $BWMASK_out.png $FG_out.png $BG_out.png
+./stbdjvul [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png]
 ```
 
 ## structure
