@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "image-stb.h"
+#include "stb/stb_image.h"
+#include "stb/stb_image_write.h"
 #include "djvul.h"
 
 void djvul_usage(char* prog, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)

@@ -6,9 +6,21 @@ https://github.com/plzombie/depress/issues/2
 #define DJVUL_H_
 #define DJVUL_VERSION "1.3"
 
+#include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta);
+#ifdef __cplusplus
+}
+#endif
+
 #define IMAGE_CHANNELS 3
 
-float exp256aprox(float x)
+#ifdef DJVUL_IMPLEMENTATION
+
+static float exp256aprox(float x)
 {
     x = 1.0 + x / 256.0;
     x *= x; x *= x; x *= x; x *= x;
@@ -440,5 +452,7 @@ int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg,
 
     return level;
 }
+
+#endif /* DJVUL_IMPLEMENTATION */
 
 #endif /* DJVUL_H_ */
