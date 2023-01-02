@@ -4,7 +4,7 @@ https://github.com/plzombie/depress/issues/2
 
 #ifndef DJVUL_H_
 #define DJVUL_H_
-#define DJVUL_VERSION "1.2"
+#define DJVUL_VERSION "1.3"
 
 #define IMAGE_CHANNELS 3
 
@@ -28,16 +28,19 @@ wbmode = 1 [white]
 doverlay = 0.5f [half]
 anisotropic = 0.0f [off, regulator]
 contrast = 0.0f [off, regulator]
+contrast = 0.0f [off, regulator]
+fbscale = 1.0f [off, regulator]
+delta = 0.0f [off, regulator]
 
 output:
 bufmask - bool* image mask (height * width)
 bufbg, buffg - unsigned char* BG, FG (heightbg * widthbg * channels, heightbg = (height + bgs - 1) / bgs, widthbg = (width + bgs - 1) / bgs)
 
 Use:
-bool ok = ImageDjvulThreshold(buf, bufbg, buffg, width, height, bgs, level, wbmode, doverlay, anisotropic, contrast);
+bool ok = ImageDjvulThreshold(buf, bufbg, buffg, width, height, bgs, level, wbmode, doverlay, anisotropic, contrast, fbscale, delta);
 */
 
-int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast)
+int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)
 {
     unsigned int y, x, d, i, j;
     unsigned int y0, x0, y1, x1, y0b, x0b, y1b, x1b, yb, xb;
@@ -252,6 +255,7 @@ int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg,
                 {
                     fgk = 1.0;
                 }
+                fgk *= fbscale;
                 for (d = 0; d < 3; d++)
                 {
                     fgsum[d] = 0;
@@ -296,7 +300,7 @@ int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg,
                             bgdistf += imd;
                         }
 
-                        if (fgdistf * fgk < bgdistf)
+                        if ((fgdistf * fgk + delta) < bgdistf)
                         {
                             for (d = 0; d < IMAGE_CHANNELS; d++)
                             {

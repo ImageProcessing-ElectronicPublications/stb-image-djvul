@@ -57,10 +57,10 @@ Load: lena.png
 image: 512x512:3
 BG,FG: 171x171:3
 DjVuL... 8 level
-Save png: lena.m.png, lena.fg.png, lena.bg.png
+Save png: lena.m.png, lena.bg.png, lena.fg.png
 ```
 
-![Mask](images/lena.mask.png) ![Fg](images/lena.fg.png) ![Bg](images/lena.bg.png)
+![Mask](images/lena.mask.png) ![Bg](images/lena.bg.png) ![Fg](images/lena.fg.png)
 
 ```shell
 ./stbdjvul -c 1 lena.png lena.mask.c1.png lena.bg.c1.png lena.fg.c1.png 
@@ -71,4 +71,4 @@ DjVuL... 8 level
 Save png: lena.mask.c1.png, lena.bg.c1.png, lena.fg.c1.png.
 ```
 
-![Mask](images/lena.mask.c1.png) ![Fg](images/lena.fg.c1.png) ![Bg](images/lena.bg.c1.png)
+![Mask](images/lena.mask.c1.png) ![Bg](images/lena.bg.c1.png) ![Fg](images/lena.fg.c1.png)
