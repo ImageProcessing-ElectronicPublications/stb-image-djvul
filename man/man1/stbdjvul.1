@@ -1,4 +1,4 @@
-.TH "StbDjVuL" 1 1.1 "1 Jan 2023" "User Manual"
+.TH "StbDjVuL" 1 1.2 "2 Jan 2023" "User Manual"
 
 .SH NAME
 stbdjvul
@@ -14,10 +14,13 @@ stbdjvul [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png]
 .SH OPTIONS
 .TP
 -a N.N
-factor anisortopic (default 0.0)
+factor anisortopic (default 0.0 [off, regulator])
 .TP
 -b NUM
 downsample FG and BG (default 3)
+.TP
+-c N.N
+factor contrast (default 0.0 [off, regulator])
 .TP
 -l NUM
 level of scale blocks (default 0 = auto)

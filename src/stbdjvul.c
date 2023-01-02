@@ -7,13 +7,14 @@
 #include "image-stb.h"
 #include "djvul.h"
 
-void djvul_usage(char* prog, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic)
+void djvul_usage(char* prog, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast)
 {
     printf("StbDjVuL version %s.\n", DJVUL_VERSION);
     printf("usage: %s [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png]\n", prog);
     printf("options:\n");
     printf("  -a N.N    factor anisortopic (default %f)\n", anisotropic);
     printf("  -b NUM    downsample FG and BG (default %d)\n", bgs);
+    printf("  -c N.N    factor contrast (default %f)\n", contrast);
     printf("  -l NUM    level of scale blocks (default %d)\n", level);
     printf("  -o N.N    part of overlay blocks (default %f)\n", doverlay);
     printf("  -w        white/black mode (default %d)\n", wbmode);
@@ -27,9 +28,10 @@ int main(int argc, char **argv)
     int wbmode = 1;
     float doverlay = 0.5f;
     float anisotropic = 0.0f;
+    float contrast = 0.0f;
     int fhelp = 0;
     int opt;
-    while ((opt = getopt(argc, argv, ":a:b:l:o:wh")) != -1)
+    while ((opt = getopt(argc, argv, ":a:b:c:l:o:wh")) != -1)
     {
         switch(opt)
         {
@@ -44,6 +46,9 @@ int main(int argc, char **argv)
                 fprintf(stderr, "bgs = %d\n", bgs);
                 return 1;
             }
+            break;
+        case 'c':
+            contrast = atof(optarg);
             break;
         case 'l':
             level = atoi(optarg);
@@ -81,7 +86,7 @@ int main(int argc, char **argv)
     }
     if(optind + 2 > argc || fhelp)
     {
-        djvul_usage(argv[0], bgs, level, wbmode, doverlay, anisotropic);
+        djvul_usage(argv[0], bgs, level, wbmode, doverlay, anisotropic, contrast);
         return 0;
     }
     const char *src_name = argv[optind];
@@ -146,7 +151,7 @@ int main(int argc, char **argv)
     }
 
     printf("DjVuL...");
-    if(!(level = ImageDjvulThreshold(data, mask_data, bg_data, fg_data, width, height, bgs, level, wbmode, doverlay, anisotropic)))
+    if(!(level = ImageDjvulThreshold(data, mask_data, bg_data, fg_data, width, height, bgs, level, wbmode, doverlay, anisotropic, contrast)))
     {
         fprintf(stderr, "ERROR: not complite DjVuL\n");
         return 3;

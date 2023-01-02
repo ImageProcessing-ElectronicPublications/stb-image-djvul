@@ -4,7 +4,7 @@ https://github.com/plzombie/depress/issues/2
 
 #ifndef DJVUL_H_
 #define DJVUL_H_
-#define DJVUL_VERSION "1.1"
+#define DJVUL_VERSION "1.2"
 
 #define IMAGE_CHANNELS 3
 
@@ -26,16 +26,18 @@ bgs = 3 // downscale BG and FG
 level = 0 [auto]
 wbmode = 1 [white]
 doverlay = 0.5f [half]
+anisotropic = 0.0f [off, regulator]
+contrast = 0.0f [off, regulator]
 
 output:
 bufmask - bool* image mask (height * width)
 bufbg, buffg - unsigned char* BG, FG (heightbg * widthbg * channels, heightbg = (height + bgs - 1) / bgs, widthbg = (width + bgs - 1) / bgs)
 
 Use:
-bool ok = ImageDjvulThreshold(buf, bufbg, buffg, width, height, bgs, level, wbmode, doverlay);
+bool ok = ImageDjvulThreshold(buf, bufbg, buffg, width, height, bgs, level, wbmode, doverlay, anisotropic, contrast);
 */
 
-int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic)
+int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast)
 {
     unsigned int y, x, d, i, j;
     unsigned int y0, x0, y1, x1, y0b, x0b, y1b, x1b, yb, xb;
@@ -43,7 +45,7 @@ int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg,
     unsigned long k, l, lm, n;
     unsigned char fgbase, bgbase;
     unsigned int cnth, cntw;
-    int pim[IMAGE_CHANNELS], gim[IMAGE_CHANNELS];
+    int pim[IMAGE_CHANNELS], gim[IMAGE_CHANNELS], tim[IMAGE_CHANNELS];
     int fgim[IMAGE_CHANNELS], bgim[IMAGE_CHANNELS];
     int imd;
     float fgk, imx, parts, ims[IMAGE_CHANNELS];
@@ -274,12 +276,13 @@ int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg,
                         for (d = 0; d < IMAGE_CHANNELS; d++)
                         {
                             pim[d] = (int)buf[k + d];
+                            tim[d] = pim[d] +  contrast * (pim[d] - gim[d]);
                         }
 
                         fgdistf = 0.0f;
                         for (d = 0; d < IMAGE_CHANNELS; d++)
                         {
-                            imd = pim[d];
+                            imd = tim[d];
                             imd -= fgim[d];
                             if (imd < 0) imd = -imd;
                             fgdistf += imd;
@@ -287,7 +290,7 @@ int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg,
                         bgdistf = 0.0f;
                         for (d = 0; d < IMAGE_CHANNELS; d++)
                         {
-                            imd = pim[d];
+                            imd = tim[d];
                             imd -= bgim[d];
                             if (imd < 0) imd = -imd;
                             bgdistf += imd;
