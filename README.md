@@ -49,8 +49,10 @@ The first parameter specifies the path to the image. The second parameter is the
 
 ## DjVu Layered
 
+![lena](images/lena.png)  
+
 ```shell
-./stbdjvul lena.png lena.mask.png lena.fg.png lena.bg.png 
+./stbdjvul lena.png lena.mask.png lena.bg.png lena.fg.png
 Load: lena.png
 image: 512x512:3
 BG,FG: 171x171:3
@@ -58,5 +60,15 @@ DjVuL... 8 level
 Save png: lena.m.png, lena.fg.png, lena.bg.png
 ```
 
-![lena](images/lena.png)  
 ![Mask](images/lena.mask.png) ![Fg](images/lena.fg.png) ![Bg](images/lena.bg.png)
+
+```shell
+./stbdjvul -c 1 lena.png lena.mask.c1.png lena.bg.c1.png lena.fg.c1.png 
+Load: lena.png
+image: 512x512:3
+BG,FG: 171x171:3
+DjVuL... 8 level
+Save png: lena.mask.c1.png, lena.bg.c1.png, lena.fg.c1.png.
+```
+
+![Mask](images/lena.mask.c1.png) ![Fg](images/lena.fg.c1.png) ![Bg](images/lena.bg.c1.png)
