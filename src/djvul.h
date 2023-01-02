@@ -8,10 +8,16 @@ https://github.com/plzombie/depress/issues/2
 
 #include <stdbool.h>
 
+#ifdef DJVUL_STATIC
+#define DJVULAPI static
+#else
+#define DJVULAPI extern
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta);
+DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta);
 #ifdef __cplusplus
 }
 #endif
@@ -52,7 +58,7 @@ Use:
 bool ok = ImageDjvulThreshold(buf, bufbg, buffg, width, height, bgs, level, wbmode, doverlay, anisotropic, contrast, fbscale, delta);
 */
 
-int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)
+DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)
 {
     unsigned int y, x, d, i, j;
     unsigned int y0, x0, y1, x1, y0b, x0b, y1b, x1b, yb, xb;
