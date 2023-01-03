@@ -12,6 +12,7 @@ submodules:
 - [stb](https://github.com/nothings/stb.git) -> [src/stb](src/stb)
 
 ```shell
+$ git submodule init
 $ git submodule update
 ```
 
@@ -42,8 +43,8 @@ The first parameter specifies the path to the image. The second parameter is the
 
 ## structure
 
+- `dependencies.c` - API [stb](https://github.com/nothings/stb.git)
 - `djvul.h` - DjVuL algoritm
-- `image-stb.h` - API [stb](https://github.com/nothings/stb.git)
 - `stb/` - [stb](https://github.com/nothings/stb.git)
 - `stbdjvul.c` - CLI program.
 

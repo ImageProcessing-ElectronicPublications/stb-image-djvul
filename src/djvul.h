@@ -4,7 +4,7 @@ https://github.com/plzombie/depress/issues/2
 
 #ifndef DJVUL_H_
 #define DJVUL_H_
-#define DJVUL_VERSION "1.3"
+#define DJVUL_VERSION "1.4"
 
 #include <stdbool.h>
 
@@ -28,7 +28,7 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
 
 static float exp256aprox(float x)
 {
-    x = 1.0 + x / 256.0;
+    x = 1.0f + x / 256.0f;
     x *= x; x *= x; x *= x; x *= x;
     x *= x; x *= x; x *= x; x *= x;
 
@@ -53,9 +53,10 @@ delta = 0.0f [off, regulator]
 output:
 bufmask - bool* image mask (height * width)
 bufbg, buffg - unsigned char* BG, FG (heightbg * widthbg * channels, heightbg = (height + bgs - 1) / bgs, widthbg = (width + bgs - 1) / bgs)
+level - use level
 
 Use:
-bool ok = ImageDjvulThreshold(buf, bufbg, buffg, width, height, bgs, level, wbmode, doverlay, anisotropic, contrast, fbscale, delta);
+int level = ImageDjvulThreshold(buf, bufbg, buffg, width, height, bgs, level, wbmode, doverlay, anisotropic, contrast, fbscale, delta);
 */
 
 DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)
@@ -263,7 +264,7 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
 
                 // anisotropic regulator
                 fgk = (fgdist + bgdist);
-                if (fgk > 0)
+                if (fgk > 0.0f)
                 {
                     fgk = (bgdist - fgdist) / fgk;
                     fgk *= anisotropic;
@@ -271,16 +272,9 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
                 }
                 else
                 {
-                    fgk = 1.0;
+                    fgk = 1.0f;
                 }
                 fgk *= fbscale;
-                for (d = 0; d < 3; d++)
-                {
-                    fgsum[d] = 0;
-                    bgsum[d] = 0;
-                }
-                fgnum = 0;
-                bgnum = 0;
 
                 // separate FG and BG
                 for (d = 0; d < IMAGE_CHANNELS; d++)
