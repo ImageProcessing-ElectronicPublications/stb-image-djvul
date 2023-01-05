@@ -4,7 +4,7 @@ https://github.com/plzombie/depress/issues/2
 
 #ifndef DJVUL_H_
 #define DJVUL_H_
-#define DJVUL_VERSION "1.5"
+#define DJVUL_VERSION "1.6"
 
 #include <stdbool.h>
 
@@ -483,7 +483,7 @@ DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* 
     int imd;
     bool mim;
     float imx, parts, ims[IMAGE_CHANNELS];
-    float fgdist, bgdist, fgdistf, bgdistf, kover, fgpart, bgpart;
+    float fgdist, bgdist, kover, fgpart, bgpart;
     unsigned int maskbl, maskover, bgsover, fgnum, bgnum;
     unsigned int fgsum[IMAGE_CHANNELS], bgsum[IMAGE_CHANNELS];
 

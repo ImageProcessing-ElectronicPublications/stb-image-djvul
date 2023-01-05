@@ -9,6 +9,7 @@ Degradation of images on layers mask, foreground and background by cluster analy
 ### load submodules
 
 submodules:
+
 - [stb](https://github.com/nothings/stb.git) -> [src/stb](src/stb)
 
 ```shell
@@ -37,6 +38,7 @@ $ make
 ## use
 
 The first parameter specifies the path to the image. The second parameter is the resulting BW mask. [optional: The third parameter is the background. The fourth parameter is foreground.]
+
 ```shell
 ./stbdjvul [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png]
 ```
@@ -74,12 +76,12 @@ Save png: lena.mask.c1.png, lena.bg.c1.png, lena.fg.c1.png.
 
 ![Mask](images/lena.mask.c1.png) ![Bg](images/lena.bg.c1.png) ![Fg](images/lena.fg.c1.png)
 
-### DjVU Layered Ground
+### DjVU Layered ground
 
-This utility splits an image into BG and FG according to an existing mask. It is possible to correct the mask.
+This utility includes a mode for splitting an image into a BG and a FG based on an existing mask (ground). The mask can be corrected.
 
 ```shell
-stbdjvulground -r lena.png lena.mask.png lena.bg.g.png lena.fg.g.png 
+stbdjvul -m 1 -r lena.png lena.mask.png lena.bg.g.png lena.fg.g.png 
 Load: lena.png
 image: 512x512:3
 Load: lena.mask.png
