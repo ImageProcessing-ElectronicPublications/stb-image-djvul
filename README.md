@@ -73,3 +73,20 @@ Save png: lena.mask.c1.png, lena.bg.c1.png, lena.fg.c1.png.
 ```
 
 ![Mask](images/lena.mask.c1.png) ![Bg](images/lena.bg.c1.png) ![Fg](images/lena.fg.c1.png)
+
+### DjVU Layered Ground
+
+This utility splits an image into BG and FG according to an existing mask. It is possible to correct the mask.
+
+```shell
+stbdjvulground -r lena.png lena.mask.png lena.bg.g.png lena.fg.g.png 
+Load: lena.png
+image: 512x512:3
+Load: lena.mask.png
+mask: 512x512:3
+BG,FG: 171x171:3
+DjVuL ground... 8 level
+Save png: lena.mask.png, lena.bg.g.png, lena.fg.g.png.
+```
+
+![Mask](images/lena.mask.png) -rewrite-> ![Mask](images/lena.mask.g.png) ![Bg](images/lena.bg.g.png) ![Fg](images/lena.fg.g.png)

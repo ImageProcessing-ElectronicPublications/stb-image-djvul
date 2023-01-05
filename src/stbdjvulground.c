@@ -8,19 +8,15 @@
 #include "stb/stb_image_write.h"
 #include "djvul.h"
 
-void djvul_usage(char* prog, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)
+void djvul_usage(char* prog, unsigned int bgs, unsigned int level, float doverlay)
 {
-    printf("StbDjVuL version %s.\n", DJVUL_VERSION);
-    printf("usage: %s [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png]\n", prog);
+    printf("StbDjVuLground version %s.\n", DJVUL_VERSION);
+    printf("usage: %s [options] image_in bw_mask_in [bg_out.png] [fg_out.png]\n", prog);
     printf("options:\n");
-    printf("  -a N.N    factor anisortopic (regulator, default %f)\n", anisotropic);
     printf("  -b NUM    downsample FG and BG (default %d)\n", bgs);
-    printf("  -c N.N    factor contrast (regulator, default %f)\n", contrast);
-    printf("  -d N.N    factor delta (regulator, default %f)\n", delta);
-    printf("  -f N.N    factor FG/BG scale (regulator, default %f)\n", fbscale);
     printf("  -l NUM    level of scale blocks (default %d)\n", level);
     printf("  -o N.N    part of overlay blocks (default %f)\n", doverlay);
-    printf("  -w        white/black mode (default %d)\n", wbmode);
+    printf("  -r        rewrite maks\n");
     printf("  -h        show this help message and exit\n");
 }
 
@@ -28,21 +24,14 @@ int main(int argc, char **argv)
 {
     unsigned int bgs = 3;
     unsigned int level = 0;
-    int wbmode = 1;
+    int remask = 0;
     float doverlay = 0.5f;
-    float anisotropic = 0.0f;
-    float contrast = 0.0f;
-    float fbscale = 1.0f;
-    float delta = 0.0f;
     int fhelp = 0;
     int opt;
-    while ((opt = getopt(argc, argv, ":a:b:c:d:f:l:o:wh")) != -1)
+    while ((opt = getopt(argc, argv, ":b:l:o:rh")) != -1)
     {
         switch(opt)
         {
-        case 'a':
-            anisotropic = atof(optarg);
-            break;
         case 'b':
             bgs = atoi(optarg);
             if (bgs < 1)
@@ -51,15 +40,6 @@ int main(int argc, char **argv)
                 fprintf(stderr, "bgs = %d\n", bgs);
                 return 1;
             }
-            break;
-        case 'c':
-            contrast = atof(optarg);
-            break;
-        case 'd':
-            delta = atof(optarg);
-            break;
-        case 'f':
-            fbscale = atof(optarg);
             break;
         case 'l':
             level = atoi(optarg);
@@ -79,8 +59,8 @@ int main(int argc, char **argv)
                 return 1;
             }
             break;
-        case 'w':
-            wbmode = -wbmode;
+        case 'r':
+            remask = 1;
             break;
         case 'h':
             fhelp = 1;
@@ -97,7 +77,7 @@ int main(int argc, char **argv)
     }
     if(optind + 2 > argc || fhelp)
     {
-        djvul_usage(argv[0], bgs, level, wbmode, doverlay, anisotropic, contrast, fbscale, delta);
+        djvul_usage(argv[0], bgs, level, doverlay);
         return 0;
     }
     const char *src_name = argv[optind];
@@ -107,7 +87,7 @@ int main(int argc, char **argv)
     const char *fg_name = NULL;
     if(optind + 3 < argc) fg_name = argv[optind + 3];
 
-    int height, width, channels;
+    int height, width, channels, heightm, widthm;
 
     printf("Load: %s\n", src_name);
     stbi_uc* img = NULL;
@@ -138,16 +118,47 @@ int main(int argc, char **argv)
     }
     stbi_image_free(img);
 
-    int bg_width = (width + bgs - 1) / bgs;
-    int bg_height = (height + bgs - 1) / bgs;
-    printf("BG,FG: %dx%d:%d\n", bg_width, bg_height, IMAGE_CHANNELS);
-
+    printf("Load: %s\n", mask_name);
+    img = NULL;
+    if (!(img = stbi_load(mask_name, &widthm, &heightm, &channels, STBI_rgb_alpha)))
+    {
+        fprintf(stderr, "ERROR: not read image: %s\n", mask_name);
+        return 1;
+    }
+    printf("mask: %dx%d:%d\n", widthm, heightm, channels);
+    if ((width != widthm) || (height != height))
+    {
+        fprintf(stderr, "ERROR: sizes do not match: %s\n", mask_name);
+        return 1;
+    }
     bool *mask_data = NULL;
     if (!(mask_data = (bool*)malloc(height * width * sizeof(bool))))
     {
         fprintf(stderr, "ERROR: not memiory\n");
         return 2;
     }
+    ki = 0;
+    kd = 0;
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            int mt = 0;
+            for (int d = 0; d < IMAGE_CHANNELS; d++)
+            {
+                mt += img[ki + d];
+            }
+            mask_data[kd] = (mt < 383);
+            ki += STBI_rgb_alpha;
+            kd ++;
+        }
+    }
+    stbi_image_free(img);
+
+    int bg_width = (width + bgs - 1) / bgs;
+    int bg_height = (height + bgs - 1) / bgs;
+    printf("BG,FG: %dx%d:%d\n", bg_width, bg_height, IMAGE_CHANNELS);
+
     unsigned char *bg_data = NULL;
     if (!(bg_data = (unsigned char*)malloc(bg_height * bg_width * IMAGE_CHANNELS * sizeof(unsigned char))))
     {
@@ -161,10 +172,10 @@ int main(int argc, char **argv)
         return 2;
     }
 
-    printf("DjVuL...");
-    if(!(level = ImageDjvulThreshold(data, mask_data, bg_data, fg_data, width, height, bgs, level, wbmode, doverlay, anisotropic, contrast, fbscale, delta)))
+    printf("DjVuL ground...");
+    if(!(level = ImageDjvulGround(data, mask_data, bg_data, fg_data, width, height, bgs, level, doverlay)))
     {
-        fprintf(stderr, "ERROR: not complite DjVuL\n");
+        fprintf(stderr, "ERROR: not complite DjVuL ground\n");
         return 3;
     }
 
@@ -185,11 +196,19 @@ int main(int argc, char **argv)
     }
     printf(" %d level\n", level);
 
-    printf("Save png: %s", mask_name);
-    if (!(stbi_write_png(mask_name, width, height, IMAGE_CHANNELS, data, width * IMAGE_CHANNELS)))
+    printf("Save png:");
+    if (remask)
     {
-        fprintf(stderr, "ERROR: not write image: %s\n", mask_name);
-        return 1;
+        printf(" %s", mask_name);
+        if (!(stbi_write_png(mask_name, width, height, IMAGE_CHANNELS, data, width * IMAGE_CHANNELS)))
+        {
+            fprintf(stderr, "ERROR: not write image: %s\n", mask_name);
+            return 1;
+        }
+    }
+    else
+    {
+        printf(" none");
     }
     if (bg_name)
     {
