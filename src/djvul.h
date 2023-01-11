@@ -4,7 +4,7 @@ https://github.com/plzombie/depress/issues/2
 
 #ifndef DJVUL_H_
 #define DJVUL_H_
-#define DJVUL_VERSION "1.7"
+#define DJVUL_VERSION "1.8"
 
 #include <stdbool.h>
 
@@ -20,6 +20,7 @@ extern "C" {
 DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta);
 DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, float doverlay);
 DJVULAPI int ImageFGdownsample(unsigned char* buffg, unsigned int width, unsigned int height, unsigned int fgs);
+DJVULAPI int ImageDjvuReconstruct(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int widthbg, unsigned int heightbg, unsigned int widthfg, unsigned int heightfg);
 #ifdef __cplusplus
 }
 #endif
@@ -817,6 +818,102 @@ DJVULAPI int ImageFGdownsample(unsigned char* buffg, unsigned int width, unsigne
     }
 
     return fgs;
+}
+
+DJVULAPI int ImageDjvuReconstruct(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int widthbg, unsigned int heightbg, unsigned int widthfg, unsigned int heightfg)
+{
+    unsigned int y, x, xbg, ybg, xfg, yfg, d, ground = 0;
+    int bgsh, bgsw, fgsh, fgsw;
+    int c, cp, cn, dx, dy, dcy, dcx;
+    unsigned char bgc, fgc;
+    size_t k, km, kbg, kfg, linebg, linefg;
+
+    if (bufbg)
+    {
+        bgsh = (height + heightbg - 1) / heightbg;
+        bgsw = (width + widthbg - 1) / widthbg;
+        ground++;
+    }
+    else
+    {
+        bgsh = 1;
+        bgsw = 1;
+    }
+    if (buffg)
+    {
+        fgsh = (height + heightfg - 1) / heightfg;
+        fgsw = (width + widthfg - 1) / widthfg;
+        ground++;
+    }
+    else
+    {
+        fgsh = 1;
+        fgsw = 1;
+    }
+    linebg = widthbg * IMAGE_CHANNELS;
+    linefg = widthfg * IMAGE_CHANNELS;
+    k = 0;
+    km = 0;
+    for (y = 0; y < height; y++)
+    {
+        ybg = y / bgsh;
+        yfg = y / fgsh;
+        for (x = 0; x < width; x++)
+        {
+            xbg = x / bgsw;
+            xfg = x / fgsw;
+            for (d = 0; d < IMAGE_CHANNELS; d++)
+            {
+                if (bufbg)
+                {
+                    kbg = (widthbg * ybg + xbg) * IMAGE_CHANNELS + d;
+                    c = (int)bufbg[kbg];
+
+                    cp = (ybg > 0) ? (int)bufbg[kbg - linebg] : c;
+                    cn = (ybg < heightbg - 1) ? (int)bufbg[kbg + linebg] : c;
+                    dcy = cn - cp;
+                    dy = y - ybg * bgsh;
+                    cp = (xbg > 0) ? (int)bufbg[kbg - IMAGE_CHANNELS] : c;
+                    cn = (xbg < widthbg - 1) ? (int)bufbg[kbg + IMAGE_CHANNELS] : c;
+                    dcx = cn - cp;
+                    dx = x - xbg * bgsw;
+                    c += (dcy * (2 * dy + 1 - bgsh) / bgsh + dcx * (2 * dx + 1 - bgsw) / bgsw) / 4;
+
+                    bgc = (unsigned char)((c < 0) ? 0 : (c < 255) ? c : 255);
+                 }
+                else
+                {
+                    bgc = 255;
+                }
+                if (buffg)
+                {
+                    kfg = (widthfg * yfg + xfg) * IMAGE_CHANNELS + d;
+                    c = (int)buffg[kfg];
+
+                    cp = (yfg > 0) ? (int)buffg[kfg - linefg] : c;
+                    cn = (yfg < heightfg - 1) ? (int)buffg[kfg + linefg] : c;
+                    dcy = cn - cp;
+                    dy = y - yfg * fgsh;
+                    cp = (xfg > 0) ? (int)buffg[kfg - IMAGE_CHANNELS] : c;
+                    cn = (xfg < widthfg - 1) ? (int)buffg[kfg + IMAGE_CHANNELS] : c;
+                    dcx = cn - cp;
+                    dx = x - xfg * fgsw;
+                    c += (dcy * (2 * dy + 1 - fgsh) / fgsh + dcx * (2 * dx + 1 - fgsw) / fgsw) / 4;
+
+                    fgc = (unsigned char)((c < 0) ? 0 : (c < 255) ? c : 255);
+                }
+                else
+                {
+                    fgc = 0;
+                }
+                buf[k] = (bufmask[km]) ? fgc : bgc;
+                k++;
+            }
+            km++;
+        }
+    }
+
+    return ground;
 }
 
 #endif /* DJVUL_IMPLEMENTATION */

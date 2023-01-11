@@ -58,9 +58,9 @@ The first parameter specifies the path to the image. The second parameter is the
 ./stbdjvul lena.png lena.mask.png lena.bg.png lena.fg.png
 Load: lena.png
 image: 256x256:3
-BG,FG: 86x86:3
-DjVuL... 7 level
+BG: 86x86:3
 FG: 43x43:3
+DjVuL... 7 level
 Save png: lena.mask.png, lena.bg.png, lena.fg.png.
 ```
 
@@ -70,15 +70,15 @@ Save png: lena.mask.png, lena.bg.png, lena.fg.png.
 ./stbdjvul -c 1 lena.png lena.mask.c1.png lena.bg.c1.png lena.fg.c1.png 
 Load: lena.png
 image: 256x256:3
-BG,FG: 86x86:3
-DjVuL... 7 level
+BG: 86x86:3
 FG: 43x43:3
+DjVuL... 7 level
 Save png: lena.mask.c1.png, lena.bg.c1.png, lena.fg.c1.png.
 ```
 
 ![Mask](images/lena.mask.c1.png) ![Bg](images/lena.bg.c1.png) ![Fg](images/lena.fg.c1.png)
 
-### DjVU Layered ground
+### DjVu Layered ground
 
 This utility includes a mode for splitting an image into a BG and a FG based on an existing mask (ground). The mask can be corrected.
 
@@ -86,12 +86,30 @@ This utility includes a mode for splitting an image into a BG and a FG based on 
 ./stbdjvul -m 1 -r lena.png lena.mask.png lena.bg.g.png lena.fg.g.png 
 Load: lena.png
 image: 256x256:3
-BG,FG: 86x86:3
 Load: lena.mask.png
 mask: 256x256:3
-DjVuL ground... 7 level
+BG: 86x86:3
 FG: 43x43:3
+DjVuL ground... 7 level
 Save png: lena.mask.png, lena.bg.g.png, lena.fg.g.png.
 ```
 
 ![Mask](images/lena.mask.png) -rewrite-> ![Mask](images/lena.mask.g.png) ![Bg](images/lena.bg.g.png) ![Fg](images/lena.fg.g.png)
+
+### DjVu Layered reconstruct
+
+This utility includes a mode for reconstruct an image on an existing mask, BG and FG (reconstruct).
+
+```shell
+./stbdjvul -m 2 lena.r.png lena.mask.png lena.bg.png lena.fg.png 
+Load: lena.mask.png
+mask: 256x256:3
+Load: lena.bg.png
+BG: 86x86:3
+Load: lena.fg.png
+FG: 43x43:3
+DjVuL reconstruct... 2 level
+Save png: lena.r.png.
+```
+
+![Rec](images/lena.r.png)
