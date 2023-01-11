@@ -57,10 +57,11 @@ The first parameter specifies the path to the image. The second parameter is the
 ```shell
 ./stbdjvul lena.png lena.mask.png lena.bg.png lena.fg.png
 Load: lena.png
-image: 512x512:3
-BG,FG: 171x171:3
-DjVuL... 8 level
-Save png: lena.m.png, lena.bg.png, lena.fg.png
+image: 256x256:3
+BG,FG: 86x86:3
+DjVuL... 7 level
+FG: 43x43:3
+Save png: lena.mask.png, lena.bg.png, lena.fg.png.
 ```
 
 ![Mask](images/lena.mask.png) ![Bg](images/lena.bg.png) ![Fg](images/lena.fg.png)
@@ -68,9 +69,10 @@ Save png: lena.m.png, lena.bg.png, lena.fg.png
 ```shell
 ./stbdjvul -c 1 lena.png lena.mask.c1.png lena.bg.c1.png lena.fg.c1.png 
 Load: lena.png
-image: 512x512:3
-BG,FG: 171x171:3
-DjVuL... 8 level
+image: 256x256:3
+BG,FG: 86x86:3
+DjVuL... 7 level
+FG: 43x43:3
 Save png: lena.mask.c1.png, lena.bg.c1.png, lena.fg.c1.png.
 ```
 
@@ -81,13 +83,14 @@ Save png: lena.mask.c1.png, lena.bg.c1.png, lena.fg.c1.png.
 This utility includes a mode for splitting an image into a BG and a FG based on an existing mask (ground). The mask can be corrected.
 
 ```shell
-stbdjvul -m 1 -r lena.png lena.mask.png lena.bg.g.png lena.fg.g.png 
+./stbdjvul -m 1 -r lena.png lena.mask.png lena.bg.g.png lena.fg.g.png 
 Load: lena.png
-image: 512x512:3
+image: 256x256:3
+BG,FG: 86x86:3
 Load: lena.mask.png
-mask: 512x512:3
-BG,FG: 171x171:3
-DjVuL ground... 8 level
+mask: 256x256:3
+DjVuL ground... 7 level
+FG: 43x43:3
 Save png: lena.mask.png, lena.bg.g.png, lena.fg.g.png.
 ```
 

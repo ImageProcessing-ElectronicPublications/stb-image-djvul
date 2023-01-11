@@ -1,4 +1,4 @@
-.TH "StbDjVuL" 1 1.6 "5 Jan 2023" "User Manual"
+.TH "StbDjVuL" 1 1.7 "11 Jan 2023" "User Manual"
 
 .SH NAME
 stbdjvul
@@ -27,8 +27,11 @@ factor contrast (regulator, default 0.0 [off])
 -d N.N
 factor delta (regulator, default 0.0 [off])
 .TP
--f N.N
+-e N.N
 factor FG/BG scale (regulator, default 1.0 [off])
+.TP
+-f NUM
+downsample FG (default 2)
 .TP
 -l NUM
 level of scale blocks (default 0 = auto)
@@ -51,10 +54,11 @@ show this help message and exit
 .SH EXAMPLE
  stbdjvul lena.png lena.mask.png lena.bg.png lena.fg.png
 
-  Load: lena.png
-  image: 256x256:3
+ Load: lena.png
+ image: 256x256:3
   BG,FG: 86x86:3
   DjVuL... 7 level
+  FG: 43x43:3
   Save png: lena.mask.png, lena.bg.png, lena.fg.png.
 
  stbdjvul -m 1 -r lena.png lena.mask.png lena.bg.png lena.fg.png
@@ -65,6 +69,7 @@ show this help message and exit
   Load: lena.mask.png
   mask: 256x256:3
   DjVuL ground... 7 level
+  FG: 43x43:3
   Save png: lena.mask.png, lena.bg.png, lena.fg.png.
 
 .SH COPYRIGHT

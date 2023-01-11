@@ -8,7 +8,7 @@
 #include "stb/stb_image_write.h"
 #include "djvul.h"
 
-void djvul_usage(char* prog, unsigned int bgs, unsigned int level, int wbmode, int pmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)
+void djvul_usage(char* prog, unsigned int bgs, unsigned int fgs, unsigned int level, int wbmode, int pmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)
 {
     printf("StbDjVuL version %s.\n", DJVUL_VERSION);
     printf("usage: %s [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png]\n", prog);
@@ -17,7 +17,8 @@ void djvul_usage(char* prog, unsigned int bgs, unsigned int level, int wbmode, i
     printf("  -b NUM    downsample FG and BG (default %d)\n", bgs);
     printf("  -c N.N    factor contrast (regulator, default %f)\n", contrast);
     printf("  -d N.N    factor delta (regulator, default %f)\n", delta);
-    printf("  -f N.N    factor FG/BG scale (regulator, default %f)\n", fbscale);
+    printf("  -e N.N    factor FG/BG scale (regulator, default %f)\n", fbscale);
+    printf("  -f NUM    downsample FG (default %d)\n", fgs);
     printf("  -l NUM    level of scale blocks (default %d)\n", level);
     printf("  -m NUM    mode: 0 - threshold, 1 - ground (default %d)\n", pmode);
     printf("  -o N.N    part of overlay blocks (default %f)\n", doverlay);
@@ -29,6 +30,7 @@ void djvul_usage(char* prog, unsigned int bgs, unsigned int level, int wbmode, i
 int main(int argc, char **argv)
 {
     unsigned int bgs = 3;
+    unsigned int fgs = 2;
     unsigned int level = 0;
     int wbmode = 1;
     float doverlay = 0.5f;
@@ -40,7 +42,7 @@ int main(int argc, char **argv)
     int remask = 0;
     int fhelp = 0;
     int opt;
-    while ((opt = getopt(argc, argv, ":a:b:c:d:f:l:m:o:rwh")) != -1)
+    while ((opt = getopt(argc, argv, ":a:b:c:d:e:f:l:m:o:rwh")) != -1)
     {
         switch(opt)
         {
@@ -62,8 +64,17 @@ int main(int argc, char **argv)
         case 'd':
             delta = atof(optarg);
             break;
-        case 'f':
+        case 'e':
             fbscale = atof(optarg);
+            break;
+        case 'f':
+            fgs = atoi(optarg);
+            if (fgs < 1)
+            {
+                fprintf(stderr, "Bad argument\n");
+                fprintf(stderr, "fgs = %d\n", fgs);
+                return 1;
+            }
             break;
         case 'l':
             level = atoi(optarg);
@@ -107,7 +118,7 @@ int main(int argc, char **argv)
     }
     if(optind + 2 > argc || fhelp)
     {
-        djvul_usage(argv[0], bgs, level, wbmode, pmode, doverlay, anisotropic, contrast, fbscale, delta);
+        djvul_usage(argv[0], bgs, fgs, level, wbmode, pmode, doverlay, anisotropic, contrast, fbscale, delta);
         return 0;
     }
     const char *src_name = argv[optind];
@@ -242,6 +253,16 @@ int main(int argc, char **argv)
     }
     printf(" %d level\n", level);
 
+    int fg_width = bg_width;
+    int fg_height = bg_height;
+    if (fgs > 1)
+    {
+        fg_width = (bg_width + fgs - 1) / fgs;
+        fg_height = (bg_height + fgs - 1) / fgs;
+        printf("FG: %dx%d:%d\n", fg_width, fg_height, IMAGE_CHANNELS);
+        fgs = ImageFGdownsample(fg_data, bg_width, bg_height, fgs);
+    }
+
     printf("Save png:");
     if ((pmode != 1) || remask)
     {
@@ -268,7 +289,7 @@ int main(int argc, char **argv)
     if (fg_name)
     {
         printf(", %s", fg_name);
-        if (!(stbi_write_png(fg_name, bg_width, bg_height, IMAGE_CHANNELS, fg_data, bg_width * IMAGE_CHANNELS)))
+        if (!(stbi_write_png(fg_name, fg_width, fg_height, IMAGE_CHANNELS, fg_data, fg_width * IMAGE_CHANNELS)))
         {
             fprintf(stderr, "ERROR: not write image: %s\n", fg_name);
             return 1;

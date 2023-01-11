@@ -4,7 +4,7 @@ https://github.com/plzombie/depress/issues/2
 
 #ifndef DJVUL_H_
 #define DJVUL_H_
-#define DJVUL_VERSION "1.6"
+#define DJVUL_VERSION "1.7"
 
 #include <stdbool.h>
 
@@ -19,6 +19,7 @@ extern "C" {
 #endif
 DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, int wbmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta);
 DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* bufbg, unsigned char* buffg, unsigned int width, unsigned int height, unsigned int bgs, unsigned int level, float doverlay);
+DJVULAPI int ImageFGdownsample(unsigned char* buffg, unsigned int width, unsigned int height, unsigned int fgs);
 #ifdef __cplusplus
 }
 #endif
@@ -766,6 +767,56 @@ DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* 
     }
 
     return level;
+}
+
+DJVULAPI int ImageFGdownsample(unsigned char* buffg, unsigned int width, unsigned int height, unsigned int fgs)
+{
+    unsigned int widthfg, heightfg, y, x, y0, x0, y1, x1, xf, yf, d, n;
+    int s;
+    size_t k, kf;
+
+    if (fgs > 1)
+    {
+        widthfg = (width + fgs - 1) / fgs;
+        heightfg = (height + fgs - 1) / fgs;
+        k = 0;
+        for (y = 0; y < heightfg; y++)
+        {
+            y0 = y * fgs;
+            y1 = y0 + fgs;
+            y1 = (y1 < height) ? y1 : height;
+            for (x = 0; x < widthfg; x++)
+            {
+                x0 = x * fgs;
+                x1 = x0 + fgs;
+                x1 = (x1 < width) ? x1 : width;
+                for (d = 0; d < IMAGE_CHANNELS; d++)
+                {
+                    s = 0;
+                    n = 0;
+                    for (yf = y0; yf < y1; yf++)
+                    {
+                        for (xf = x0; xf < x1; xf++)
+                        {
+                            kf = (width * yf + xf) * IMAGE_CHANNELS + d;
+                            s += (int)buffg[kf];
+                            n++;
+                        }
+                    }
+                    n = (n > 0) ? n : 1;
+                    s /= n;
+                    buffg[k] = s;
+                    k++;
+                }
+            }
+        }
+    }
+    else
+    {
+        fgs = 1;
+    }
+
+    return fgs;
 }
 
 #endif /* DJVUL_IMPLEMENTATION */
