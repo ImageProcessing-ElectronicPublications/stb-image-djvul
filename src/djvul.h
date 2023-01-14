@@ -4,7 +4,7 @@ https://github.com/plzombie/depress/issues/2
 
 #ifndef DJVUL_H_
 #define DJVUL_H_
-#define DJVUL_VERSION "1.8"
+#define DJVUL_VERSION "1.9"
 
 #include <stdbool.h>
 
@@ -72,7 +72,7 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
     int pim[IMAGE_CHANNELS], gim[IMAGE_CHANNELS], tim[IMAGE_CHANNELS];
     int fgim[IMAGE_CHANNELS], bgim[IMAGE_CHANNELS];
     int imd;
-    float fgk, imx, parts, ims[IMAGE_CHANNELS];
+    float fgk, imx, partl, parts, ims[IMAGE_CHANNELS];
     float fgdist, bgdist, fgdistf, bgdistf, kover, fgpart, bgpart;
     unsigned int maskbl, maskover, bgsover, fgnum, bgnum;
     unsigned int fgsum[IMAGE_CHANNELS], bgsum[IMAGE_CHANNELS];
@@ -107,6 +107,7 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
             blsz <<= 1;
         }
     }
+    blsz >>= 1;
     if (doverlay < 0.0f)
     {
         doverlay = 0.0f;
@@ -146,6 +147,7 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
         maskbl = bgs * blsz;
         maskover = (kover * maskbl);
         bgsover = (kover * blsz);
+        partl = (float)(level - l) / (float)level;
         for (i = 0; i < cnth; i++)
         {
             y0 = i * maskbl;
@@ -184,8 +186,9 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
                     {
                         ims[d] /= (float)n;
                     }
-                    if (ims[d] > 255.0f) ims[d] = 255.0f;
-                    gim[d] = (int)(ims[d] + 0.5f);
+                    ims[d] += 0.5f;
+                    ims[d] = (ims[d] < 0.0f) ? 0.0f : (ims[d] < 255.0f) ? ims[d] : 255.0f;
+                    gim[d] = (int)ims[d];
                 }
 
                 // mean region buffg
@@ -213,8 +216,9 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
                     {
                         ims[d] /= (float)n;
                     }
-                    if (ims[d] > 255.0f) ims[d] = 255.0f;
-                    fgim[d] = (int)(ims[d] + 0.5f);
+                    ims[d] += 0.5f;
+                    ims[d] = (ims[d] < 0.0f) ? 0.0f : (ims[d] < 255.0f) ? ims[d] : 255.0f;
+                    fgim[d] = (int)ims[d];
                 }
 
                 // mean region bufbg
@@ -242,8 +246,9 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
                     {
                         ims[d] /= (float)n;
                     }
-                    if (ims[d] > 255.0f) ims[d] = 255.0f;
-                    bgim[d] = (int)(ims[d] + 0.5f);
+                    ims[d] += 0.5f;
+                    ims[d] = (ims[d] < 0.0f) ? 0.0f : (ims[d] < 255.0f) ? ims[d] : 255.0f;
+                    bgim[d] = (int)ims[d];
                 }
 
                 // distance buffg -> buf, bufbg -> buf
@@ -356,13 +361,10 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
                     fgpart += (fgdist + fgdist) / (fgdist + bgdist);
                     bgpart += (bgdist + bgdist) / (fgdist + bgdist);
                 }
+                fgpart *= partl;
+                bgpart *= partl;
 
                 // average old and new FG
-                for (d = 0; d < IMAGE_CHANNELS; d++)
-                {
-                    ims[d] = 0.0f;
-                }
-                n = 0;
                 parts = 1.0f /((float)fgpart + 1.0f);
                 for (y = y0b; y < y1b; y++)
                 {
@@ -376,18 +378,13 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
                             imx += (float)fgim[d];
                             imx *= parts;
                             imx += 0.5f;
-                            if (imx > 255.0f) imx = 255.0f;
-                            buffg[k + d] = (unsigned char)(imx + 0.5f);
-                            ims[d] += imx;
+                            imx = (imx < 0.0f) ? 0.0f : (imx < 255.0f) ? imx : 255.0f;
+                            buffg[k + d] = (unsigned char)imx;
                         }
                     }
                 }
 
                 // average old and new BG
-                for (d = 0; d < IMAGE_CHANNELS; d++)
-                {
-                    ims[d] = 0.0f;
-                }
                 parts = 1.0f /((float)bgpart + 1.0f);
                 for (y = y0b; y < y1b; y++)
                 {
@@ -401,9 +398,8 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
                             imx += (float)bgim[d];
                             imx *= parts;
                             imx += 0.5f;
-                            if (imx > 255.0f) imx = 255.0f;
-                            bufbg[k + d] = (unsigned char)(imx + 0.5f);
-                            ims[d] += imx;
+                            imx = (imx < 0.0f) ? 0.0f : (imx < 255.0f) ? imx : 255.0f;
+                            bufbg[k + d] = (unsigned char)imx;
                         }
                     }
                 }
@@ -484,7 +480,7 @@ DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* 
     int pim[IMAGE_CHANNELS], fgim[IMAGE_CHANNELS], bgim[IMAGE_CHANNELS];
     int imd;
     bool mim;
-    float imx, parts, ims[IMAGE_CHANNELS];
+    float imx, partl, parts, ims[IMAGE_CHANNELS];
     float fgdist, bgdist, kover, fgpart, bgpart;
     unsigned int maskbl, maskover, bgsover, fgnum, bgnum;
     unsigned int fgsum[IMAGE_CHANNELS], bgsum[IMAGE_CHANNELS];
@@ -519,6 +515,7 @@ DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* 
             blsz <<= 1;
         }
     }
+    blsz >>= 1;
     if (doverlay < 0.0f)
     {
         doverlay = 0.0f;
@@ -549,6 +546,7 @@ DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* 
         maskbl = bgs * blsz;
         maskover = (kover * maskbl);
         bgsover = (kover * blsz);
+        partl = (float)(level - l) / (float)level;
         for (i = 0; i < cnth; i++)
         {
             y0 = i * maskbl;
@@ -671,13 +669,10 @@ DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* 
                     fgpart += (fgdist + fgdist) / (fgdist + bgdist);
                     bgpart += (bgdist + bgdist) / (fgdist + bgdist);
                 }
+                fgpart *= partl;
+                bgpart *= partl;
 
                 // average old and new FG
-                for (d = 0; d < IMAGE_CHANNELS; d++)
-                {
-                    ims[d] = 0.0f;
-                }
-                n = 0;
                 parts = 1.0f /((float)fgpart + 1.0f);
                 for (y = y0b; y < y1b; y++)
                 {
@@ -691,18 +686,13 @@ DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* 
                             imx += (float)fgim[d];
                             imx *= parts;
                             imx += 0.5f;
-                            if (imx > 255.0f) imx = 255.0f;
-                            buffg[k + d] = (unsigned char)(imx + 0.5f);
-                            ims[d] += imx;
+                            imx = (imx < 0.0f) ? 0.0f : (imx < 255.0f) ? imx : 255.0f;
+                            buffg[k + d] = (unsigned char)imx;
                         }
                     }
                 }
 
                 // average old and new BG
-                for (d = 0; d < IMAGE_CHANNELS; d++)
-                {
-                    ims[d] = 0.0f;
-                }
                 parts = 1.0f /((float)bgpart + 1.0f);
                 for (y = y0b; y < y1b; y++)
                 {
@@ -716,9 +706,8 @@ DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* 
                             imx += (float)bgim[d];
                             imx *= parts;
                             imx += 0.5f;
-                            if (imx > 255.0f) imx = 255.0f;
-                            bufbg[k + d] = (unsigned char)(imx + 0.5f);
-                            ims[d] += imx;
+                            imx = (imx < 0.0f) ? 0.0f : (imx < 255.0f) ? imx : 255.0f;
+                            bufbg[k + d] = (unsigned char)imx;
                         }
                     }
                 }
