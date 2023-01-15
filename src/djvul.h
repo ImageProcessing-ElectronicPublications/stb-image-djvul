@@ -4,7 +4,7 @@ https://github.com/plzombie/depress/issues/2
 
 #ifndef DJVUL_H_
 #define DJVUL_H_
-#define DJVUL_VERSION "2.0"
+#define DJVUL_VERSION "2.1"
 
 #include <stdbool.h>
 
@@ -25,7 +25,7 @@ DJVULAPI int ImageDjvuReconstruct(unsigned char* buf, bool* bufmask, unsigned ch
 }
 #endif
 
-#define IMAGE_CHANNELS 3
+#define DJVUL_IMAGE_CHANNELS 3
 
 #ifdef DJVUL_IMPLEMENTATION
 
@@ -69,15 +69,15 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
     unsigned long k, l, lm, n;
     unsigned char fgbase, bgbase;
     unsigned int cnth, cntw;
-    int pim[IMAGE_CHANNELS], gim[IMAGE_CHANNELS], tim[IMAGE_CHANNELS];
-    int fgim[IMAGE_CHANNELS], bgim[IMAGE_CHANNELS];
+    int pim[DJVUL_IMAGE_CHANNELS], gim[DJVUL_IMAGE_CHANNELS], tim[DJVUL_IMAGE_CHANNELS];
+    int fgim[DJVUL_IMAGE_CHANNELS], bgim[DJVUL_IMAGE_CHANNELS];
     int imd;
-    float fgk, imx, partl, parts, ims[IMAGE_CHANNELS];
+    float fgk, imx, partl, parts, ims[DJVUL_IMAGE_CHANNELS];
     float fgdist, bgdist, fgdistf, bgdistf, kover, fgpart, bgpart;
     unsigned int maskbl, maskover, bgsover, fgnum, bgnum;
-    unsigned int fgsum[IMAGE_CHANNELS], bgsum[IMAGE_CHANNELS];
+    unsigned int fgsum[DJVUL_IMAGE_CHANNELS], bgsum[DJVUL_IMAGE_CHANNELS];
 
-    channels = (channels < IMAGE_CHANNELS) ? channels : IMAGE_CHANNELS;
+    channels = (channels < DJVUL_IMAGE_CHANNELS) ? channels : DJVUL_IMAGE_CHANNELS;
     if (bgs > 0)
     {
         widthbg = (width + bgs - 1) / bgs;
@@ -478,15 +478,15 @@ DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* 
     unsigned long k, km, l, lm, n;
     unsigned char fgbase, bgbase;
     unsigned int cnth, cntw;
-    int pim[IMAGE_CHANNELS], fgim[IMAGE_CHANNELS], bgim[IMAGE_CHANNELS];
+    int pim[DJVUL_IMAGE_CHANNELS], fgim[DJVUL_IMAGE_CHANNELS], bgim[DJVUL_IMAGE_CHANNELS];
     int imd;
     bool mim;
-    float imx, partl, parts, ims[IMAGE_CHANNELS];
+    float imx, partl, parts, ims[DJVUL_IMAGE_CHANNELS];
     float fgdist, bgdist, kover, fgpart, bgpart;
     unsigned int maskbl, maskover, bgsover, fgnum, bgnum;
-    unsigned int fgsum[IMAGE_CHANNELS], bgsum[IMAGE_CHANNELS];
+    unsigned int fgsum[DJVUL_IMAGE_CHANNELS], bgsum[DJVUL_IMAGE_CHANNELS];
 
-    channels = (channels < IMAGE_CHANNELS) ? channels : IMAGE_CHANNELS;
+    channels = (channels < DJVUL_IMAGE_CHANNELS) ? channels : DJVUL_IMAGE_CHANNELS;
     if (bgs > 0)
     {
         widthbg = (width + bgs - 1) / bgs;

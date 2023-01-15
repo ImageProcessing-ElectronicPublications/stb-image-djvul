@@ -11,7 +11,7 @@
 void djvul_usage(char* prog, unsigned int bgs, unsigned int fgs, unsigned int level, int wbmode, int pmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)
 {
     printf("StbDjVuL version %s.\n", DJVUL_VERSION);
-    printf("usage: %s [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png]\n", prog);
+    printf("usage: %s [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png] [bgmask_out.png] [fgmask_out.png]\n", prog);
     printf("options:\n");
     printf("  -a N.N    factor anisortopic (regulator, default %f)\n", anisotropic);
     printf("  -b NUM    downsample FG and BG (default %d)\n", bgs);
@@ -29,7 +29,7 @@ void djvul_usage(char* prog, unsigned int bgs, unsigned int fgs, unsigned int le
 
 int main(int argc, char **argv)
 {
-    unsigned int channels_out = IMAGE_CHANNELS;
+    unsigned int channels_out = DJVUL_IMAGE_CHANNELS;
     unsigned int bgs = 3;
     unsigned int fgs = 2;
     unsigned int level = 0;
@@ -134,6 +134,10 @@ int main(int argc, char **argv)
     if(optind + 2 < argc) bg_name = argv[optind + 2];
     const char *fg_name = NULL;
     if(optind + 3 < argc) fg_name = argv[optind + 3];
+    const char *bgmask_name = NULL;
+    if(optind + 4 < argc) bgmask_name = argv[optind + 4];
+    const char *fgmask_name = NULL;
+    if(optind + 5 < argc) fgmask_name = argv[optind + 5];
 
     int height, width, channels, heightm, widthm;
 
@@ -408,6 +412,87 @@ int main(int argc, char **argv)
             if (!(stbi_write_png(fg_name, fg_width, fg_height, channels_out, fg_data, fg_width * channels_out)))
             {
                 fprintf(stderr, "ERROR: not write image: %s\n", fg_name);
+                return 1;
+            }
+        }
+        if (bgmask_name)
+        {
+            printf(", %s", bgmask_name);
+            kd = 0;
+            for (int y = 0; y < bg_height; y++)
+            {
+                for (int x = 0; x < bg_width; x++)
+                {
+                    for (int d = 0; d < channels_out; d++)
+                    {
+                        bg_data[kd] = 0;
+                        kd++;
+                    }
+                }
+            }
+            ki = 0;
+            kd = 0;
+            for (int y = 0; y < height; y++)
+            {
+                int yb = y / bgs;
+                for (int x = 0; x < width; x++)
+                {
+                    int xb = x / bgs;
+                    if (!mask_data[ki])
+                    {
+                        kd = (yb * bg_width + xb) * channels_out;
+                        for (int d = 0; d < channels_out; d++)
+                        {
+                            bg_data[kd + d] = 255;
+                        }
+                    }
+                    ki++;
+                }
+            }
+            if (!(stbi_write_png(bgmask_name, bg_width, bg_height, channels_out, bg_data, bg_width * channels_out)))
+            {
+                fprintf(stderr, "ERROR: not write image: %s\n", bgmask_name);
+                return 1;
+            }
+        }
+        if (fgmask_name)
+        {
+            printf(", %s", fgmask_name);
+            kd = 0;
+            for (int y = 0; y < fg_height; y++)
+            {
+                for (int x = 0; x < fg_width; x++)
+                {
+                    for (int d = 0; d < channels_out; d++)
+                    {
+                        fg_data[kd] = 0;
+                        kd++;
+                    }
+                }
+            }
+            ki = 0;
+            kd = 0;
+            for (int y = 0; y < height; y++)
+            {
+                int yf = y / bgs / fgs;
+                for (int x = 0; x < width; x++)
+                {
+                    int xf = x / bgs / fgs;
+                    if (mask_data[ki])
+                    {
+                        kd = (yf * fg_width + xf) * channels_out;
+                        for (int d = 0; d < channels_out; d++)
+                        {
+                            fg_data[kd + d] = 255;
+                        }
+                    }
+                    ki++;
+                }
+            }
+            printf(", %s", fgmask_name);
+            if (!(stbi_write_png(fgmask_name, fg_width, fg_height, channels_out, fg_data, fg_width * channels_out)))
+            {
+                fprintf(stderr, "ERROR: not write image: %s\n", fgmask_name);
                 return 1;
             }
         }
