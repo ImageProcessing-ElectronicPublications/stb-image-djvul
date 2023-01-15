@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "stb/stb_image.h"
-#include "stb/stb_image_write.h"
+#include <stb/stb_image.h>
+#include <stb/stb_image_write.h>
 #include "djvul.h"
 
 void djvul_usage(char* prog, unsigned int bgs, unsigned int fgs, unsigned int level, int wbmode, int pmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)
@@ -29,6 +29,7 @@ void djvul_usage(char* prog, unsigned int bgs, unsigned int fgs, unsigned int le
 
 int main(int argc, char **argv)
 {
+    unsigned int channels_out = IMAGE_CHANNELS;
     unsigned int bgs = 3;
     unsigned int fgs = 2;
     unsigned int level = 0;
@@ -154,7 +155,7 @@ int main(int argc, char **argv)
             return 1;
         }
         printf("image: %dx%d:%d\n", width, height, channels);
-        if (!(data = (unsigned char*)malloc(height * width * IMAGE_CHANNELS * sizeof(unsigned char))))
+        if (!(data = (unsigned char*)malloc(height * width * channels_out * sizeof(unsigned char))))
         {
             fprintf(stderr, "ERROR: not use memmory\n");
             return 1;
@@ -165,12 +166,12 @@ int main(int argc, char **argv)
         {
             for (int x = 0; x < width; x++)
             {
-                for (int d = 0; d < IMAGE_CHANNELS; d++)
+                for (int d = 0; d < channels_out; d++)
                 {
                     data[kd + d] = (unsigned char)img[ki + d];
                 }
                 ki += STBI_rgb_alpha;
-                kd += IMAGE_CHANNELS;
+                kd += channels_out;
             }
         }
         stbi_image_free(img);
@@ -206,7 +207,7 @@ int main(int argc, char **argv)
         {
             width = widthm;
             height = heightm;
-            if (!(data = (unsigned char*)malloc(height * width * IMAGE_CHANNELS * sizeof(unsigned char))))
+            if (!(data = (unsigned char*)malloc(height * width * channels_out * sizeof(unsigned char))))
             {
                 fprintf(stderr, "ERROR: not use memmory\n");
                 return 1;
@@ -224,7 +225,7 @@ int main(int argc, char **argv)
             for (int x = 0; x < width; x++)
             {
                 int mt = 0;
-                for (int d = 0; d < IMAGE_CHANNELS; d++)
+                for (int d = 0; d < channels_out; d++)
                 {
                     mt += img[ki + d];
                 }
@@ -242,7 +243,7 @@ int main(int argc, char **argv)
 
     if (pmode < 2)
     {
-        if (!(bg_data = (unsigned char*)malloc(bg_height * bg_width * IMAGE_CHANNELS * sizeof(unsigned char))))
+        if (!(bg_data = (unsigned char*)malloc(bg_height * bg_width * channels_out * sizeof(unsigned char))))
         {
             fprintf(stderr, "ERROR: not memiory\n");
             return 2;
@@ -259,7 +260,7 @@ int main(int argc, char **argv)
                 fprintf(stderr, "ERROR: not read image: %s\n", src_name);
                 return 1;
             }
-            if (!(bg_data = (unsigned char*)malloc(bg_height * bg_width * IMAGE_CHANNELS * sizeof(unsigned char))))
+            if (!(bg_data = (unsigned char*)malloc(bg_height * bg_width * channels_out * sizeof(unsigned char))))
             {
                 fprintf(stderr, "ERROR: not use memmory\n");
                 return 1;
@@ -269,22 +270,22 @@ int main(int argc, char **argv)
             {
                 for (int x = 0; x < bg_width; x++)
                 {
-                    for (int d = 0; d < IMAGE_CHANNELS; d++)
+                    for (int d = 0; d < channels_out; d++)
                     {
                         bg_data[kd + d] = (unsigned char)img[ki + d];
                     }
                     ki += STBI_rgb_alpha;
-                    kd += IMAGE_CHANNELS;
+                    kd += channels_out;
                 }
             }
             stbi_image_free(img);
         }
     }
-    printf("BG: %dx%d:%d\n", bg_width, bg_height, IMAGE_CHANNELS);
+    printf("BG: %dx%d:%d\n", bg_width, bg_height, channels_out);
 
     if (pmode < 2)
     {
-        if (!(fg_data = (unsigned char*)malloc(bg_height * bg_width * IMAGE_CHANNELS * sizeof(unsigned char))))
+        if (!(fg_data = (unsigned char*)malloc(bg_height * bg_width * channels_out * sizeof(unsigned char))))
         {
             fprintf(stderr, "ERROR: not memiory\n");
             return 2;
@@ -301,7 +302,7 @@ int main(int argc, char **argv)
                 fprintf(stderr, "ERROR: not read image: %s\n", src_name);
                 return 1;
             }
-            if (!(fg_data = (unsigned char*)malloc(fg_height * fg_width * IMAGE_CHANNELS * sizeof(unsigned char))))
+            if (!(fg_data = (unsigned char*)malloc(fg_height * fg_width * channels_out * sizeof(unsigned char))))
             {
                 fprintf(stderr, "ERROR: not use memmory\n");
                 return 1;
@@ -311,23 +312,23 @@ int main(int argc, char **argv)
             {
                 for (int x = 0; x < fg_width; x++)
                 {
-                    for (int d = 0; d < IMAGE_CHANNELS; d++)
+                    for (int d = 0; d < channels_out; d++)
                     {
                         fg_data[kd + d] = (unsigned char)img[ki + d];
                     }
                     ki += STBI_rgb_alpha;
-                    kd += IMAGE_CHANNELS;
+                    kd += channels_out;
                 }
             }
             stbi_image_free(img);
         }
     }
-    printf("FG: %dx%d:%d\n", fg_width, fg_height, IMAGE_CHANNELS);
+    printf("FG: %dx%d:%d\n", fg_width, fg_height, channels_out);
 
     if (pmode == 1)
     {
         printf("DjVuL ground...");
-        if(!(level = ImageDjvulGround(data, mask_data, bg_data, fg_data, width, height, bgs, level, doverlay)))
+        if(!(level = ImageDjvulGround(data, mask_data, bg_data, fg_data, width, height, channels_out, bgs, level, doverlay)))
         {
             fprintf(stderr, "ERROR: not complite DjVuL ground\n");
             return 3;
@@ -336,7 +337,7 @@ int main(int argc, char **argv)
     else if (pmode == 2)
     {
         printf("DjVuL reconstruct...");
-        if((level = ImageDjvuReconstruct(data, mask_data, bg_data, fg_data, width, height, bg_width, bg_height, fg_width, fg_height)) < 0)
+        if((level = ImageDjvuReconstruct(data, mask_data, bg_data, fg_data, width, height, channels_out, bg_width, bg_height, fg_width, fg_height)) < 0)
         {
             fprintf(stderr, "ERROR: not complite DjVuL reconstruct\n");
             return 3;
@@ -345,7 +346,7 @@ int main(int argc, char **argv)
     else
     {
         printf("DjVuL...");
-        if(!(level = ImageDjvulThreshold(data, mask_data, bg_data, fg_data, width, height, bgs, level, wbmode, doverlay, anisotropic, contrast, fbscale, delta)))
+        if(!(level = ImageDjvulThreshold(data, mask_data, bg_data, fg_data, width, height, channels_out, bgs, level, wbmode, doverlay, anisotropic, contrast, fbscale, delta)))
         {
             fprintf(stderr, "ERROR: not complite DjVuL\n");
             return 3;
@@ -361,7 +362,7 @@ int main(int argc, char **argv)
             for (int x = 0; x < width; x++)
             {
                 unsigned char bw = (mask_data[ki]) ? 0 : 255;
-                for (int d = 0; d < IMAGE_CHANNELS; d++)
+                for (int d = 0; d < channels_out; d++)
                 {
                     data[kd] = bw;
                     kd++;
@@ -371,7 +372,7 @@ int main(int argc, char **argv)
         }
         if (fgs > 1)
         {
-            fgs = ImageFGdownsample(fg_data, bg_width, bg_height, fgs);
+            fgs = ImageFGdownsample(fg_data, bg_width, bg_height, channels_out, fgs);
         }
     }
     printf(" %d level\n", level);
@@ -382,7 +383,7 @@ int main(int argc, char **argv)
         if ((pmode != 1) || remask)
         {
             printf(" %s", mask_name);
-            if (!(stbi_write_png(mask_name, width, height, IMAGE_CHANNELS, data, width * IMAGE_CHANNELS)))
+            if (!(stbi_write_png(mask_name, width, height, channels_out, data, width * channels_out)))
             {
                 fprintf(stderr, "ERROR: not write image: %s\n", mask_name);
                 return 1;
@@ -395,7 +396,7 @@ int main(int argc, char **argv)
         if (bg_name)
         {
             printf(", %s", bg_name);
-            if (!(stbi_write_png(bg_name, bg_width, bg_height, IMAGE_CHANNELS, bg_data, bg_width * IMAGE_CHANNELS)))
+            if (!(stbi_write_png(bg_name, bg_width, bg_height, channels_out, bg_data, bg_width * channels_out)))
             {
                 fprintf(stderr, "ERROR: not write image: %s\n", bg_name);
                 return 1;
@@ -404,7 +405,7 @@ int main(int argc, char **argv)
         if (fg_name)
         {
             printf(", %s", fg_name);
-            if (!(stbi_write_png(fg_name, fg_width, fg_height, IMAGE_CHANNELS, fg_data, fg_width * IMAGE_CHANNELS)))
+            if (!(stbi_write_png(fg_name, fg_width, fg_height, channels_out, fg_data, fg_width * channels_out)))
             {
                 fprintf(stderr, "ERROR: not write image: %s\n", fg_name);
                 return 1;
@@ -414,7 +415,7 @@ int main(int argc, char **argv)
     else
     {
         printf(" %s", src_name);
-        if (!(stbi_write_png(src_name, width, height, IMAGE_CHANNELS, data, width * IMAGE_CHANNELS)))
+        if (!(stbi_write_png(src_name, width, height, channels_out, data, width * channels_out)))
         {
             fprintf(stderr, "ERROR: not write image: %s\n", mask_name);
             return 1;

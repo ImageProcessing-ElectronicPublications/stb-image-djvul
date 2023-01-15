@@ -113,3 +113,7 @@ Save png: lena.r.png.
 ```
 
 ![Rec](images/lena.r.png)
+
+---
+
+See [demo of stbDjVuL](https://github.com/ImageProcessing-ElectronicPublications/stb-image-djvul-demo).
