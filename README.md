@@ -10,7 +10,7 @@ Degradation of images on layers mask, foreground and background by cluster analy
 
 submodules:
 
-- [stb](https://github.com/nothings/stb.git) -> [src/stb](src/stb)
+- [stb](https://github.com/nothings/stb.git) -> [src](src)
 
 ```shell
 $ git submodule init
