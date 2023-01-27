@@ -4,6 +4,8 @@ DjVu Layered - image bundle on the mask + foreground + background using "Multi-s
 
 Degradation of images on layers mask, foreground and background by cluster analysis with a gradual decrease in block size.
 
+In addition to DjVuL, several more threshold methods are supported: BiMod, Sauvola, Blur threshold.
+
 ## build
 
 ### load submodules
@@ -117,3 +119,26 @@ Save png: lena.r.png.
 ---
 
 See [demo of stbDjVuL](https://github.com/ImageProcessing-ElectronicPublications/stb-image-djvul-demo).
+
+---
+
+## DjVuL description.
+
+The [base of the algorithm](https://sourceforge.net/p/imthreshold/wiki/DjVuL/?version=3) was obtained in 2016 by studying the works [monday2000](http://djvu-soft.narod.ru/) and adapting them to Linux.
+The prerequisite was the [BookScanLib](http://djvu-soft.narod.ru/bookscanlib/) project  and the algorithm [DjVu Thresholding Binarization](http://djvu-soft.narod.ru/bookscanlib/034.htm).
+This algorithm embodied good ideas, but had a recursive structure, was a "function with discontinuities" and had a hard color limit.
+The result of this algorithm, due to the indicated shortcomings and the absence of regulators, was doubtful.
+After careful study, all the foundations of the specified algorithm were rejected.
+The new algorithm is based on levels instead of recursion, a smooth weight function is used instead of a "discontinuous" one, no color restriction, BG/FG selection controls are enabled.
+The new algorithm allowed not only to obtain a much more adequate result, but also gave derivative functions: image division into BG/FG according to the existing mask.
+
+## Links
+
+* [djvulibre](http://djvu.sourceforge.net/)
+* [mfbdjvu](https://github.com/ImageProcessing-ElectronicPublications/mfbdjvu)
+* [simpledjvu](https://github.com/mihaild/simpledjvu)
+* [depress](https://github.com/plzombie/depress)
+* [tesseract](https://github.com/tesseract-ocr/tesseract)
+* [hocr-tools](https://github.com/ocropus/hocr-tools)
+* [imthreshold](https://github.com/ImageProcessing-ElectronicPublications/imthreshold)
+* [aithreshold](https://github.com/ImageProcessing-ElectronicPublications/aithreshold)

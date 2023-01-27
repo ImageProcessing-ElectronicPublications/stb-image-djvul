@@ -8,7 +8,7 @@
 #include <stb/stb_image_write.h>
 #include "djvul.h"
 
-void djvul_usage(char* prog, unsigned int bgs, unsigned int fgs, unsigned int level, int wbmode, int pmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta)
+void djvul_usage(char* prog, unsigned int bgs, unsigned int fgs, unsigned int level, int wbmode, int pmode, int tmode, float doverlay, float anisotropic, float contrast, float fbscale, float delta, float sensitivity)
 {
     printf("StbDjVuL version %s.\n", DJVUL_VERSION);
     printf("usage: %s [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png] [bgmask_out.png] [fgmask_out.png]\n", prog);
@@ -23,6 +23,8 @@ void djvul_usage(char* prog, unsigned int bgs, unsigned int fgs, unsigned int le
     printf("  -m NUM    mode: 0 - threshold, 1 - ground, 2 - recontruct (default %d)\n", pmode);
     printf("  -o N.N    part of overlay blocks (default %f)\n", doverlay);
     printf("  -r        rewrite maks in ground mode\n");
+    printf("  -s N.N    sensitivity Sauvola and Blur threshold (default %f)\n", sensitivity);
+    printf("  -t NUM    threshold: 0 - DjVuL, 1 - BiMod, 2 - Sauvola, 3 - Blur (default %d)\n", tmode);
     printf("  -w        white/black mode (default %d)\n", wbmode);
     printf("  -h        show this help message and exit\n");
 }
@@ -39,11 +41,13 @@ int main(int argc, char **argv)
     float contrast = 0.0f;
     float fbscale = 1.0f;
     float delta = 0.0f;
+    float sensitivity = 0.2f;
     int pmode = 0;
+    int tmode = 0;
     int remask = 0;
     int fhelp = 0;
     int opt;
-    while ((opt = getopt(argc, argv, ":a:b:c:d:e:f:l:m:o:rwh")) != -1)
+    while ((opt = getopt(argc, argv, ":a:b:c:d:e:f:l:m:o:rs:t:wh")) != -1)
     {
         switch(opt)
         {
@@ -107,6 +111,18 @@ int main(int argc, char **argv)
         case 'r':
             remask = 1;
             break;
+        case 's':
+            sensitivity = atof(optarg);
+            break;
+        case 't':
+            tmode = atoi(optarg);
+            if ((tmode < 0) || (tmode > 3))
+            {
+                fprintf(stderr, "Bad argument\n");
+                fprintf(stderr, "threshold = %d\n", tmode);
+                return 1;
+            }
+            break;
         case 'w':
             wbmode = -wbmode;
             break;
@@ -125,7 +141,7 @@ int main(int argc, char **argv)
     }
     if(optind + 2 > argc || fhelp)
     {
-        djvul_usage(argv[0], bgs, fgs, level, wbmode, pmode, doverlay, anisotropic, contrast, fbscale, delta);
+        djvul_usage(argv[0], bgs, fgs, level, wbmode, pmode, tmode, doverlay, anisotropic, contrast, fbscale, delta, sensitivity);
         return 0;
     }
     const char *src_name = argv[optind];
@@ -349,8 +365,23 @@ int main(int argc, char **argv)
     }
     else
     {
+        switch(tmode)
+        {
+        case TBIMOD:
+            printf("threshold: BiMod\n");
+            break;
+        case TSAUVOLA:
+            printf("threshold: Sauvola\n");
+            break;
+        case TBLUR:
+            printf("threshold: Blur\n");
+            break;
+        default:
+            printf("threshold: DjVuL\n");
+            break;
+        }
         printf("DjVuL...");
-        if(!(level = ImageDjvulThreshold(data, mask_data, bg_data, fg_data, width, height, channels_out, bgs, level, wbmode, doverlay, anisotropic, contrast, fbscale, delta)))
+        if(!(level = ImageDjvulSelect(data, mask_data, bg_data, fg_data, width, height, channels_out, bgs, level, wbmode, doverlay, anisotropic, contrast, fbscale, delta, (float)(bgs * fgs), sensitivity, tmode)))
         {
             fprintf(stderr, "ERROR: not complite DjVuL\n");
             return 3;

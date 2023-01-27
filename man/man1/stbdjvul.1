@@ -1,4 +1,4 @@
-.TH "StbDjVuL" 1 2.1 "16 Jan 2023" "User Manual"
+.TH "StbDjVuL" 1 3.0 "26 Jan 2023" "User Manual"
 
 .SH NAME
 stbdjvul
@@ -10,6 +10,7 @@ Degradation of images on layers mask, foreground and background by cluster analy
 
 This utility includes a mode for splitting an image into a BG and a FG based on an existing mask (ground). The mask can be corrected.
 This utility includes a mode for reconstruct an image on an existing mask, BG and FG (reconstruct).
+In addition to DjVuL, several more threshold methods are supported: BiMod, Sauvola, Blur threshold.
 
 .SH SYNOPSIS
 stbdjvul [options] image_in bw_mask_out.png [bg_out.png] [fg_out.png] [bgmask_out.png] [fgmask_out.png]
@@ -45,6 +46,12 @@ part of overlay blocks (default 0.5)
 .TP
 -r
 rewrite maks in ground mode
+.TP
+-s N.N
+sensitivity Sauvola and Blur threshold (default 0.2)
+.TP
+-t NUM
+threshold: 0 - DjVuL, 1 - BiMod, 2 - Sauvola, 3 - Blur (default 0)
 .TP
 -w
 white/black mode (default 1 = white)
@@ -84,11 +91,34 @@ show this help message and exit
   DjVuL reconstruct... 2 level
   Save png: lena.r.png.
 
+.SH NOTES
+DjVuL description.
+
+The base of the algorithm[1] was obtained in 2016 by studying the works monday2000[2] and adapting them to Linux.
+The prerequisite was the BookScanLib[3] project  and the algorithm DjVu Thresholding Binarization[4].
+This algorithm embodied good ideas, but had a recursive structure, was a "function with discontinuities" and had a hard color limit.
+The result of this algorithm, due to the indicated shortcomings and the absence of regulators, was doubtful.
+After careful study, all the foundations of the specified algorithm were rejected.
+The new algorithm is based on levels instead of recursion, a smooth weight function is used instead of a "discontinuous" one, no color restriction, BG/FG selection controls are enabled.
+The new algorithm allowed not only to obtain a much more adequate result, but also gave derivative functions: image division into BG/FG according to the existing mask.
+
 .SH COPYRIGHT
 This is free and unencumbered software released into the public domain.
 
 .SH SEE ALSO
-cjb2(1), c44(1), djvuextract(1), djvumake(1)
+cjb2(1), c44(1), djvuextract(1), djvumake(1), mfbdjvu(1), mfbpdf(1)
 
 .SH CONTACTS
 Website: https://github.com/ImageProcessing-ElectronicPublications/stb-image-djvul
+
+.SH LINKS
+ [1](https://sourceforge.net/p/imthreshold/wiki/DjVuL/?version=3)
+ [2](http://djvu-soft.narod.ru/)
+ [3](http://djvu-soft.narod.ru/bookscanlib/)
+ [4](http://djvu-soft.narod.ru/bookscanlib/034.htm)
+ [stb](https://github.com/nothings/stb)
+ [mfbdjvu](https://github.com/ImageProcessing-ElectronicPublications/mfbdjvu)
+ [mfbpdf](https://github.com/ImageProcessing-ElectronicPublications/mfbpdf)
+ [depress](https://github.com/plzombie/depress)
+ [imthreshold](https://github.com/ImageProcessing-ElectronicPublications/imthreshold)
+ [aithreshold](https://github.com/ImageProcessing-ElectronicPublications/aithreshold)
