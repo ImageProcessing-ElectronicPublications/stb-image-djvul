@@ -627,11 +627,13 @@ THRESHOLDAPI int ImageThresholdBlur(unsigned char* buf, bool* bufmask, unsigned 
             }
         }
         ImageMathDivide(buf, bufb, bufb, width, height, channels, -127.0f);
-    }
-
-    threshold = ImageThresholdBimod(bufb, bufmask, width, height, channels, part, delta);
-    if (bufb)
+        threshold = ImageThresholdBimod(bufb, bufmask, width, height, channels, part, delta);
         free(bufb);
+    }
+    else
+    {
+        threshold = ImageThresholdBimod(buf, bufmask, width, height, channels, part, delta);
+    }
 
     return threshold;
 }
