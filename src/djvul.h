@@ -115,7 +115,7 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
     {
         doverlay = 0.0f;
     }
-    kover = doverlay + 1.0;
+    kover = doverlay + 1.0f;
 
     // w/b mode {1/-1}
     if (wbmode < 0)
@@ -278,7 +278,7 @@ DJVULAPI int ImageDjvulThreshold(unsigned char* buf, bool* bufmask, unsigned cha
                 {
                     fgk = (bgdist - fgdist) / fgk;
                     fgk *= anisotropic;
-                    fgk = exp(fgk);
+                    fgk = (float)(exp(fgk));
                 }
                 else
                 {
@@ -527,7 +527,7 @@ DJVULAPI int ImageDjvulGround(unsigned char* buf, bool* bufmask, unsigned char* 
     {
         doverlay = 0.0f;
     }
-    kover = doverlay + 1.0;
+    kover = doverlay + 1.0f;
 
     fgbase = 127;
     bgbase = 127;

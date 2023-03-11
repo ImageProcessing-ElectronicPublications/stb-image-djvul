@@ -150,7 +150,7 @@ static void GaussLineMatrix (float *cmatrix, float radius)
                 t -= 0.5f;
                 t += step * j;
                 tt = -(t * t) / (2.0f * std_dev);
-                sum += exp (tt);
+                sum += (float)(exp(tt));
             }
             cmatrix[i] = sum * step;
         }
@@ -546,8 +546,8 @@ THRESHOLDAPI int ImageThresholdSauvola(unsigned char* buf, bool* bufmask, unsign
             imv /= n;
             imv -= (imm * imm);
             imv = (imv < 0) ? -imv : imv;
-            imv = sqrt(imv);
-            ima = 1.0 - imv / dynamic_range;
+            imv = (float)(sqrt(imv));
+            ima = 1.0f - imv / dynamic_range;
             imx = 0.0f;
             for (d = 0; d < channels; d++)
             {
@@ -564,7 +564,7 @@ THRESHOLDAPI int ImageThresholdSauvola(unsigned char* buf, bool* bufmask, unsign
             }
             else
             {
-                t = imm * (1.0 - sensitivity * ima) + delta;
+                t = imm * (1.0f - sensitivity * ima) + delta;
             }
             bufmask[km] = (imx < t);
             km++;
