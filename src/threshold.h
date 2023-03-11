@@ -170,7 +170,7 @@ static void GaussLineMatrix (float *cmatrix, float radius)
     }
 }
 
-static float GaussBlurFilterY (unsigned char *src, int height, int width, int channels, float radius)
+static float GaussBlurFilterY (unsigned char *src, unsigned int height, unsigned int width, unsigned int channels, float radius)
 {
     int iradius, y, x, yp, yn, i, dval;
     unsigned long int k, kp, kn, line = width * channels;
@@ -199,9 +199,9 @@ static float GaussBlurFilterY (unsigned char *src, int height, int width, int ch
     if (iradius > 1)
     {
         k = 0;
-        for (y = 0; y < height; y++)
+        for (y = 0; y < (int)height; y++)
         {
-            for (x = 0; x < width; x++)
+            for (x = 0; x < (int)width; x++)
             {
                 for (d = 0; d < channels; d++)
                 {
@@ -221,7 +221,7 @@ static float GaussBlurFilterY (unsigned char *src, int height, int width, int ch
                             kp -= line;
                         }
                         yn = y + i;
-                        if (yn < height)
+                        if (yn < (int)height)
                         {
                             kn += line;
                         }
@@ -242,9 +242,9 @@ static float GaussBlurFilterY (unsigned char *src, int height, int width, int ch
             }
         }
         k = 0;
-        for (y = 0; y < height; y++)
+        for (y = 0; y < (int)height; y++)
         {
-            for (x = 0; x < width; x++)
+            for (x = 0; x < (int)width; x++)
             {
                 for (d = 0; d < channels; d++)
                 {
@@ -264,7 +264,7 @@ static float GaussBlurFilterY (unsigned char *src, int height, int width, int ch
     return gaussval;
 }
 
-static float GaussBlurFilterX (unsigned char *src, int height, int width, int channels, float radius)
+static float GaussBlurFilterX (unsigned char *src, unsigned int height, unsigned int width, unsigned int channels, float radius)
 {
     int iradius, y, x, xp, xn, i, dval;
     unsigned long int k, kp, kn;
@@ -293,9 +293,9 @@ static float GaussBlurFilterX (unsigned char *src, int height, int width, int ch
     if (iradius > 1)
     {
         k = 0;
-        for (y = 0; y < height; y++)
+        for (y = 0; y < (int)height; y++)
         {
-            for (x = 0; x < width; x++)
+            for (x = 0; x < (int)width; x++)
             {
                 for (d = 0; d < channels; d++)
                 {
@@ -315,7 +315,7 @@ static float GaussBlurFilterX (unsigned char *src, int height, int width, int ch
                             kp -= channels;
                         }
                         xn = x + i;
-                        if (xn < width)
+                        if (xn < (int)width)
                         {
                             kn += channels;
                         }
@@ -336,9 +336,9 @@ static float GaussBlurFilterX (unsigned char *src, int height, int width, int ch
             }
         }
         k = 0;
-        for (y = 0; y < height; y++)
+        for (y = 0; y < (int)height; y++)
         {
-            for (x = 0; x < width; x++)
+            for (x = 0; x < (int)width; x++)
             {
                 for (d = 0; d < channels; d++)
                 {
@@ -464,7 +464,7 @@ THRESHOLDAPI int ImageThresholdBimod(unsigned char* buf, bool* bufmask, unsigned
     ImageHist(buf, histogram, width, height, channels, Tmax);
     part *= 0.5f;
     threshold = HistBiMod (histogram, Tmax, part);
-    threshold += delta;
+    threshold += (int)delta;
     threshold = ImageThreshold(buf, bufmask, width, height, channels, threshold);
 
     return threshold;
@@ -517,11 +517,11 @@ THRESHOLDAPI int ImageThresholdSauvola(unsigned char* buf, bool* bufmask, unsign
     km = 0;
     for (y = 0; y < height; y++)
     {
-        y1 = (y < radius) ? 0 : (y - radius);
+        y1 = (y < (unsigned int)radius) ? 0 : (y - (unsigned int)radius);
         y2 = (y + radius + 1 < height) ? (y + radius + 1) : height;
         for (x = 0; x < width; x++)
         {
-            x1 = (x < radius) ? 0 : (x - radius);
+            x1 = (x < (unsigned int)radius) ? 0 : (x - (unsigned int)radius);
             x2 = (x + radius + 1 < width) ? (x + radius + 1) : width;
             imm = 0;
             imv = 0;
