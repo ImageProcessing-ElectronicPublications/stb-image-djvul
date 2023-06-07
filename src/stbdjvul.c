@@ -24,7 +24,7 @@ void djvul_usage(char* prog, unsigned int bgs, unsigned int fgs, unsigned int le
     printf("  -o N.N    part of overlay blocks (default %f)\n", doverlay);
     printf("  -r        rewrite maks in ground mode\n");
     printf("  -s N.N    sensitivity Sauvola and Blur threshold (default %f)\n", sensitivity);
-    printf("  -t NUM    threshold: 0 - DjVuL, 1 - BiMod, 2 - Sauvola, 3 - Blur (default %d)\n", tmode);
+    printf("  -t NUM    threshold: 0 - DjVuL, 1 - BiMod, 2 - Sauvola, 3 - Blur, 4 - EdgePlus (default %d)\n", tmode);
     printf("  -w        white/black mode (default %d)\n", wbmode);
     printf("  -h        show this help message and exit\n");
 }
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
             break;
         case 't':
             tmode = atoi(optarg);
-            if ((tmode < 0) || (tmode > 3))
+            if ((tmode < 0) || (tmode > 4))
             {
                 fprintf(stderr, "Bad argument\n");
                 fprintf(stderr, "threshold = %d\n", tmode);
@@ -375,6 +375,9 @@ int main(int argc, char **argv)
             break;
         case TBLUR:
             printf("threshold: Blur\n");
+            break;
+        case TEDGEPLUS:
+            printf("threshold: EdgePlus\n");
             break;
         default:
             printf("threshold: DjVuL\n");
